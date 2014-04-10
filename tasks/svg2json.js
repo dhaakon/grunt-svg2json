@@ -8,27 +8,26 @@
 
 'use strict';
 
-var     exec	=	require('child_process').exec;
-var     path    =       require('path');
-var	comm	=	path.join(__dirname , '../bin/svg2gfx.xslt');
-
+var     exec	= require('child_process').exec,
+        path    = require('path'),
+        comm	= path.join(__dirname , '../bin/svg2gfx.xslt');
 
 module.exports = function(grunt) {
   var that = this;
 
   this.parseSVG = function(context) {
     var convert         = function(fp){
-      var fpR           = fp.split('/');
-      var filename      = fpR[fpR.length - 1].split('.svg')[0];
-      var filedest      = path.join(__dirname, '../tmp/', filename + '.json');
-      var fileorigin    = fp;
-      var arr           = ['xsltproc', comm, fileorigin, '>', filedest].join(' ');
 
-      var fn	        = function(err, stdout, stderr){
-        if (err) console.log(err);
+      var fpR             = fp.split('/'),
+          filename        = fpR[fpR.length - 1].split('.svg')[0],
+          filedest        = path.join(__dirname, '../tmp/', filename + '.json'),
+          fileorigin      = fp,
+          arr             = ['xsltproc', comm, fileorigin, '>', filedest].join(' '),
+          fn	          = function(err, stdout, stderr){
+            if (err) console.log(err);
 
-        context.done()
-      }
+            context.done()
+          }
 
       exec(arr, fn);
     }
