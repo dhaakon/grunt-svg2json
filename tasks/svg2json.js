@@ -58,17 +58,14 @@ module.exports = function(grunt) {
                     
           // iterate through our temporary files to copy to destination file
           for (var file in fileInfo.tmpFiles){
-            var _f = fileInfo.tmpFiles[file];
-
-            str += grunt.file.read( _f );
-
-            // get rid of the temp file
-            grunt.file.delete( _f ); 
+            var _f = fileInfo.tmpFiles[file]; // grab it
+            str += grunt.file.read( _f );     // read it
+            grunt.file.delete( _f );          // delete it
           }
 
-          grunt.file.write( dest, str )
+          grunt.file.write( dest, str )       // write it
 
-          context.done();
+          context.done();                     // we are done here
         }
       };
 
