@@ -10,11 +10,12 @@
 
 var     exec	= require('child_process').exec,
         path    = require('path'),
-        comm	= path.join(__dirname , '../bin/svg2gfx.xslt');
+        comm	= path.join(__dirname , '../bin/svg2gfx.xslt'); // our xlstproc
 
 module.exports = function(grunt) {
 	// self reference
   var self = this;
+	var fileInfo = {};
 
 	/*
 	 *
@@ -24,22 +25,64 @@ module.exports = function(grunt) {
 	 */
 
   this.parseSVG = function(context) {
-    var convert         = function(src, dest){
-      var fpR             = src.split('/'),
-          filedest        = context.files[0].dest,
-          fileorigin      = src,
-          arr							= ['xsltproc', comm, fileorigin, '>', filedest].join(' '),
-          fn							= function(err, stdout, stderr){
-            if (err) console.log(err);
+		// helper function to get the xslt command
+		var getXSLTProcCommand = function( src, dest ){
+			return ['xsltproc', comm, src, '>', dest].join(' ');
+		};
 
-            context.done();
-          };
+		// if we are converting a single file
+    var convertSingleFile = function(src, dest){
+      var callback				= function(err, stdout, stderr){
+				if (err) console.log(err);
 
-      exec(arr, fn);
-    }
+				context.done();
+			};
+
+      exec( getXSLTProcCommand( src, dest ) , callback);
+    };
+
+		// if we are converting multiple files
+		var convertMultipleFiles = function( src, dest){
+			fileInfo.tmpFiles = []
+
+			var callback = function( err, stdout, stderr ){
+				// If there are more files lets run this command again
+				if (fileInfo.currentFile-- > 1){
+					var tmpFile = path.join( __dirname, '../tmp/tmp__' + fileInfo.currentFile + '.json');
+					fileInfo.tmpFiles.push(tmpFile);
+
+					exec( getXSLTProcCommand( src[fileInfo.currentFile - 1], tmpFile ), callback);
+				// if we are finished let's copy the files over and destroy the temp files
+				}else{
+					var str = '';
+					
+					// iterate through our temporary files to copy to destination file
+					for (var file in fileInfo.tmpFiles){
+						var _f = fileInfo.tmpFiles[file];
+
+						str += grunt.file.read( _f );
+
+						// get rid of the temp file
+						grunt.file.delete( _f ); 
+					}
+
+					grunt.file.write( dest, str )
+
+					context.done();
+				}
+			};
+
+			// create a temp file
+			var tmpFile = path.join( __dirname, '../tmp/tmp__' + fileInfo.currentFile + '.json');
+			// store it to retrieve later
+			fileInfo.tmpFiles.push(tmpFile);
+
+			// call the xslt process
+			exec( getXSLTProcCommand( src[fileInfo.currentFile - 1], tmpFile ), callback );
+		}
 
 			// check to see if the file exists
-    var filterFunction  = function (filepath)   {
+    var doesFileExist  = function (filepath)   {
       var hasFile       = grunt.file.exists;
 
       if(!hasFile(filepath)){
@@ -48,21 +91,35 @@ module.exports = function(grunt) {
       }else{
         return true;
       }
-    }
+    };
 
     var fileIterator    = function (f) {
 			// grab the src then filter and convert
 			var isMoreThanOneFile = f.src.length > 1;
+			var hasDestFile = grunt.file.exists( f.dest );
 
-      if (!isMoreThanOneFile) f.src.filter(filterFunction).map(convert);
-    }
+			// if there is no destination file we need to create one before running the;
+			// xslt process.
+			if (!hasDestFile){
+				grunt.file.write( f.dest );
+			}
+
+			// if there is not more than one file we can just convert that file.
+			// if there is we need added logic to create tmp files to then concatinate.
+      if (!isMoreThanOneFile){
+				var hasFile = doesFileExist(f.src[0]);
+				convertSingleFile( f.src[0], f.dest );
+			}else{
+				fileInfo.currentFile = fileInfo.numFiles = f.src.length;
+				convertMultipleFiles(f.src, f.dest);
+			}
+    };
 
 		// iterate through all the files
     context.files.forEach(fileIterator);
   }
 
   grunt.registerMultiTask('svg2json', 'svg to json', function(){
-		console.log(this.files[0].src);
     var options = this.options({});
 
     this.done   = this.async();
