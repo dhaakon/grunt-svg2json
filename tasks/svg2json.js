@@ -10,12 +10,14 @@
 
 var     exec    = require('child_process').exec,
         path    = require('path'),
-        comm    = path.join(__dirname , '../bin/svg2gfx.xslt'); // our xlstproc
+        comm    = path.join(__dirname , '../bin/svg2gfx.xslt'), // our xlstproc
+				Sanitizer = require('./lib/sanitize');
 
 module.exports = function(grunt) {
   // self reference
   var self = this;
   var fileInfo = {};
+	var _sanitizer = Sanitizer( this );
 
   /*
    *
@@ -36,7 +38,8 @@ module.exports = function(grunt) {
         if (err) console.log(err);
 
         var obj = eval(grunt.file.read(dest));
-				
+				_sanitizer.init(dest);
+
 		    grunt.file.write(dest, JSON.stringify(obj));
         context.done();
       };
