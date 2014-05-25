@@ -8,12 +8,12 @@
 
 'use strict';
 
-var     exec    = require('child_process').exec,
-        path    = require('path'),
-        comm    = path.join(__dirname , '../bin/svg2gfx.xslt'), // our xlstproc
+var     exec      = require('child_process').exec,
+        path      = require('path'),
+        comm      = path.join(__dirname , '../bin/svg2gfx.xslt'), // our xlstproc
 				Sanitizer = require('./lib/sanitize');
 
-module.exports = function(grunt) {
+module.exports = function( grunt ) {
   // self reference
   var self = this;
   var fileInfo = {};
@@ -26,19 +26,19 @@ module.exports = function(grunt) {
    *
    */
 
-  this.parseSVG = function(context) {
+  this.parseSVG = function( context ) {
     // helper function to get the xslt command
     function getXSLTProcCommand( src, dest ){
-     return [ 'xsltproc', comm, src, '>', dest ].join(' ');
+     return ['xsltproc', comm, src, '>', dest].join(' ');
     };
 
     // if we are converting a single file
     function convertSingleFile( src, dest ){
       var callback = function(err, stdout, stderr){
-        if (err) console.log(err);
-
+        if ( err ) console.log( err );
+ 
         var obj = eval(grunt.file.read(dest));
-				_sanitizer.init(dest);
+				_sanitizer.clean( dest );
 
 		    grunt.file.write(dest, JSON.stringify(obj));
         context.done();
@@ -53,17 +53,17 @@ module.exports = function(grunt) {
 
       var callback = function( err, stdout, stderr ){
         // If there are more files lets run this command again
-        if (fileInfo.currentFile-- > 1){
-          var tmpFile = path.join( __dirname, '../tmp/tmp__' + fileInfo.currentFile + '.json');
-          fileInfo.tmpFiles.push(tmpFile);
+        if ( fileInfo.currentFile-- > 0 ){
+          var tmpFile = path.join( __dirname, '../tmp/tmp__' + fileInfo.currentFile + '.json' );
+          fileInfo.tmpFiles.push( tmpFile );
 
-          exec( getXSLTProcCommand( src[fileInfo.currentFile - 1], tmpFile ), callback);
+          exec( getXSLTProcCommand( src[fileInfo.currentFile], tmpFile ), callback );
         // if we are finished let's copy the files over and destroy the temp files
         }else{
           var str = '';
 
           // iterate through our temporary files to copy to destination file
-          for (var file in fileInfo.tmpFiles){
+          for ( var file in fileInfo.tmpFile ){
             var _f = fileInfo.tmpFiles[file]; // grab it
             str += grunt.file.read( _f );     // read it
 
@@ -79,7 +79,7 @@ module.exports = function(grunt) {
       // create a temp file
       var tmpFile = path.join( __dirname, '../tmp/tmp__' + fileInfo.currentFile + '.json');
       // store it to retrieve later
-      fileInfo.tmpFiles.push(tmpFile);
+      fileInfo.tmpFiles.push( tmpFile );
 
       // call the xslt process
       exec( getXSLTProcCommand( src[fileInfo.currentFile - 1], tmpFile ), callback );
@@ -87,9 +87,9 @@ module.exports = function(grunt) {
 
     // check to see if the file exists
     function doesFileExist ( filepath )   {
-      var hasFile       = grunt.file.exists;
+      var hasFile = grunt.file.exists;
 
-      if(!hasFile(filepath)){
+      if( !hasFile( filepath ) ){
         grunt.log.warn('Source file"' + filepath + '" not found.');
         return false;
       }else{
@@ -104,12 +104,12 @@ module.exports = function(grunt) {
 
       // if there is no destination file we need to create one before running the;
       // xslt process.
-      if (!hasDestFile){
+      if ( !hasDestFile ){
         grunt.file.write( files.dest );
       }
 
       // if there is not more than one file we can just convert that file.
-      if (!isMoreThanOneFile){
+      if ( !isMoreThanOneFile ){
         var hasFile = doesFileExist( files.src[0] );
         convertSingleFile( files.src[0], files.dest );
       // if there is we need added logic to create tmp files to then concatinate.
@@ -120,7 +120,7 @@ module.exports = function(grunt) {
     };
 
     // iterate through all the files
-    return context.files.forEach(fileIterator);
+    return context.files.forEach( fileIterator );
   }
 
   grunt.registerMultiTask('svg2json', 'svg to json', function(){

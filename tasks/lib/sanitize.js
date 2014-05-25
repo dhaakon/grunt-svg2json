@@ -4,21 +4,32 @@ module.exports = function( grunt ) {
 	function init( filePath ){
 		_file = grunt.file.read( filePath );
 		try{
-			_obj = eval(_file);
+			_obj = eval( _file );
 		}catch( e ){
 			grunt.log.warn("Invalid JSON. Check properties to make sure they are valid.")
 			return;
 		}
 
-		removeChildren( _obj );
+		return JSON.stringify( cleanJSON( _obj ) );
 	}
 
-	function removeChildren( tree ){
-		for( var branch in tree ){
+	function removeChildren( node ){
+		console.log(node);
+	}
 
+	function cleanJSON( array ){
+		for( var item in array ){
+			var node = array[ item ];
+
+			if(node.children){
+				removeChildren( node );
+			}else{
+
+			}
 		}
+		return array;
 	}
 
 
-	return { init : init };
+	return { clean : init };
 }
