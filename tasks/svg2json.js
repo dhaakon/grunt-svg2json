@@ -56,7 +56,7 @@ module.exports = function( grunt ) {
         // If there are more files lets run this command again
         if ( fileInfo.currentFile-- > 1 ){
           var tmpFile = path.join( __dirname, '../tmp/tmp__' + fileInfo.currentFile + '.json' );
-          fileInfo.tmpFiles.push( tmpFile );
+          fileInfo.tmpFiles.push({ name: src[fileInfo.currentFile - 1],file:tmpFile });
 
           exec( getXSLTProcCommand( src[fileInfo.currentFile - 1], tmpFile ), callback );
         // if we are finished let's copy the files over and destroy the temp files
@@ -67,9 +67,13 @@ module.exports = function( grunt ) {
           for ( var file in fileInfo.tmpFiles ){
 						//_sanitizer.clean(file);
 						var _f = fileInfo.tmpFiles[file];				// grab it
-						_.extend( tmp, _sanitizer.clean(_f) );  // read it
+						var name = _f.name;
+						name = name.split('.')[0];
+						name = name.split('/')[1];
 
-						grunt.file.delete( _f );								// delete it
+						tmp[name] = _sanitizer.clean(_f.file);
+
+						grunt.file.delete( _f.file );								// delete it
           }
 
           grunt.file.write( dest, JSON.stringify(tmp) );       // write it
@@ -81,7 +85,7 @@ module.exports = function( grunt ) {
       // create a temp file
       var tmpFile = path.join( __dirname, '../tmp/tmp__' + fileInfo.currentFile + '.json');
       // store it to retrieve later
-      fileInfo.tmpFiles.push( tmpFile );
+      fileInfo.tmpFiles.push( { name:src[fileInfo.currentFile - 1],file:tmpFile } );
 
       // call the xslt process
       exec( getXSLTProcCommand( src[fileInfo.currentFile - 1], tmpFile ), callback );
