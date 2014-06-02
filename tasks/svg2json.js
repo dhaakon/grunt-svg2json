@@ -72,8 +72,6 @@ module.exports = function( grunt ) {
 						grunt.file.delete( _f );								// delete it
           }
 
-					console.log(JSON.stringify(tmp));
-
           grunt.file.write( dest, JSON.stringify(tmp) );       // write it
 
           context.done();                     // we are done here
@@ -118,6 +116,9 @@ module.exports = function( grunt ) {
         convertSingleFile( files.src[0], files.dest );
       // if there is we need added logic to create tmp files to then concatinate.
       }else{
+				var root = path.join( __dirname, '../', '/tmp/' );
+				grunt.file.mkdir(root);
+
         fileInfo.currentFile = fileInfo.numFiles = files.src.length;
         convertMultipleFiles( files.src, files.dest );
       }
