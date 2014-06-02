@@ -1,7 +1,7 @@
 {
   "name": "grunt-svg2json",
   "description": "svg to json",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/dhaakon/grunt-svg2json",
   "author": {
     "name": "David Poyner",

@@ -34,17 +34,17 @@ module.exports = function( grunt ) {
 
     // if we are converting a single file
     function convertSingleFile( src, dest ){
-      var callback = function(err, stdout, stderr){
+      var callback = function( err, stdout, stderr ){
         if ( err ) console.log( err );
  
         var obj = eval(grunt.file.read(dest));
 				_sanitizer.clean( dest );
 
-		    grunt.file.write(dest, JSON.stringify(obj));
+		    grunt.file.write( dest, JSON.stringify( obj ) );
         context.done();
       };
 
-      exec( getXSLTProcCommand( src, dest ) , callback);
+      exec( getXSLTProcCommand( src, dest ) , callback );
     };
 
     // if we are converting multiple files
