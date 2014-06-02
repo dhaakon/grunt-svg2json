@@ -4,6 +4,7 @@ module.exports = function( grunt ) {
 	var _file, _obj, _cleanObj = {};
 
 	function init( filePath ){
+		_cleanObj = {};
 		_file = grunt.file.read( filePath );
 		try{
 			_obj = eval( _file );

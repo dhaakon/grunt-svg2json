@@ -50,6 +50,7 @@ module.exports = function( grunt ) {
 
     // if we are converting multiple files
     function convertMultipleFiles ( src, dest ){
+			var tmp = {};
       fileInfo.tmpFiles = []
 
       var callback = function( err, stdout, stderr ){
@@ -61,8 +62,6 @@ module.exports = function( grunt ) {
           exec( getXSLTProcCommand( src[fileInfo.currentFile - 1], tmpFile ), callback );
         // if we are finished let's copy the files over and destroy the temp files
         }else{
-          var tmp = {};
-
           // iterate through our temporary files to copy to destination file
           for ( var file in fileInfo.tmpFiles ){
 						//_sanitizer.clean(file);
