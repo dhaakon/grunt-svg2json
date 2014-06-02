@@ -11,6 +11,7 @@
 var     exec      = require('child_process').exec,
         path      = require('path'),
         comm      = path.join(__dirname , '../bin/svg2gfx.xslt'), // our xlstproc
+				_         = require('underscore'),
 				Sanitizer = require('./lib/sanitize');
 
 module.exports = function( grunt ) {
@@ -53,24 +54,27 @@ module.exports = function( grunt ) {
 
       var callback = function( err, stdout, stderr ){
         // If there are more files lets run this command again
-        if ( fileInfo.currentFile-- > 0 ){
+        if ( fileInfo.currentFile-- > 1 ){
           var tmpFile = path.join( __dirname, '../tmp/tmp__' + fileInfo.currentFile + '.json' );
           fileInfo.tmpFiles.push( tmpFile );
 
-          exec( getXSLTProcCommand( src[fileInfo.currentFile], tmpFile ), callback );
+          exec( getXSLTProcCommand( src[fileInfo.currentFile - 1], tmpFile ), callback );
         // if we are finished let's copy the files over and destroy the temp files
         }else{
-          var str = '';
+          var tmp = {};
 
           // iterate through our temporary files to copy to destination file
-          for ( var file in fileInfo.tmpFile ){
-            var _f = fileInfo.tmpFiles[file]; // grab it
-            str += grunt.file.read( _f );     // read it
+          for ( var file in fileInfo.tmpFiles ){
+						//_sanitizer.clean(file);
+						var _f = fileInfo.tmpFiles[file];				// grab it
+						_.extend( tmp, _sanitizer.clean(_f) );  // read it
 
-            grunt.file.delete( _f );          // delete it
+						grunt.file.delete( _f );								// delete it
           }
 
-          grunt.file.write( dest, str )       // write it
+					console.log(JSON.stringify(tmp));
+
+          grunt.file.write( dest, JSON.stringify(tmp) );       // write it
 
           context.done();                     // we are done here
         }
@@ -114,7 +118,7 @@ module.exports = function( grunt ) {
         convertSingleFile( files.src[0], files.dest );
       // if there is we need added logic to create tmp files to then concatinate.
       }else{
-        fileInfo.currentFile = fileInfo.numFiles = f.src.length;
+        fileInfo.currentFile = fileInfo.numFiles = files.src.length;
         convertMultipleFiles( files.src, files.dest );
       }
     };

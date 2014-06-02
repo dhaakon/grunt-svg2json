@@ -1,6 +1,8 @@
+var _ = require('underscore');
+
 module.exports = function( grunt ) {
-	var _file, _obj;
-	
+	var _file, _obj, _cleanObj = {};
+
 	function init( filePath ){
 		_file = grunt.file.read( filePath );
 		try{
@@ -10,11 +12,20 @@ module.exports = function( grunt ) {
 			return;
 		}
 
-		return JSON.stringify( cleanJSON( _obj ) );
+		return cleanJSON( _obj );
 	}
 
 	function removeChildren( node ){
-		console.log(node);
+		var tmpObj = {};
+
+		if (node.children[0] && node.children[0].length > 1){
+			return removeChildren(node.children);
+		}else if(typeof node.children[0] === 'object'){
+			var tmp = {};
+			tmp[node.name] = _.omit( node, 'name' );
+
+			return tmp;
+		}
 	}
 
 	function cleanJSON( array ){
@@ -22,12 +33,16 @@ module.exports = function( grunt ) {
 			var node = array[ item ];
 
 			if(node.children){
-				removeChildren( node );
+				_.extend(_cleanObj, removeChildren( node ));
 			}else{
+				var name = String(node.name);
+				var tmp = {};
+				tmp[node.name] = _.omit(node, 'name');
 
+				_.extend(_cleanObj, tmp);
 			}
 		}
-		return array;
+		return _cleanObj;
 	}
 
 
