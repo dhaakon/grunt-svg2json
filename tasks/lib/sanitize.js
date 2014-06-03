@@ -16,6 +16,27 @@ module.exports = function( grunt ) {
 		return cleanJSON( _obj );
 	}
 
+	function parseName( name ){
+		var obj = {};
+		var isPropertySet = name.split(':').length > 1;
+		name = name.replace(/_x3B_/g, ';');
+
+		if (!isPropertySet){
+			obj['id'] = name;
+		}else{
+			var props = name.split(';');
+			for(prop in props){
+				var tmp = props[prop];
+				if(!!tmp){
+					var s = tmp.split(':');
+					obj[s[0]] = s[1];
+				}
+			}
+		}
+
+		return obj;
+	}
+
 	function removeChildren( node ){
 		var tmpObj = {};
 
@@ -24,6 +45,14 @@ module.exports = function( grunt ) {
 		}else if(typeof node.children[0] === 'object'){
 			var tmp = {};
 			tmp[node.name] = _.omit( node, 'name' );
+
+			for( var i = 0; i < node.children.length; ++i){
+				var tmpObj = node.children[i];
+				if (tmpObj.name){
+					var obj = _.extend( _.omit(tmpObj, 'name'), parseName(tmpObj.name) );
+					node.children[i] = obj;
+				}
+			}
 
 			return tmp;
 		}
