@@ -23,6 +23,7 @@ module.exports = function( grunt ) {
 			return removeChildren(node.children);
 		}else if(typeof node.children[0] === 'object'){
 			var tmp = {};
+			console.log(node.name);
 			tmp[node.name] = _.omit( node, 'name' );
 
 			return tmp;

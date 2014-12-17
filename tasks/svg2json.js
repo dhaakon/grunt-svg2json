@@ -38,9 +38,9 @@ module.exports = function( grunt ) {
       var callback = function( err, stdout, stderr ){
         if ( err ) console.log( err );
  
-        var obj = eval(grunt.file.read(dest));
-				_sanitizer.clean( dest );
-
+        var obj = _sanitizer.clean( dest );
+				
+				grunt.log.ok(['[ ' + src + ' ] successfully parsed!']);
 		    grunt.file.write( dest, JSON.stringify( obj ) );
         context.done();
       };
@@ -71,6 +71,7 @@ module.exports = function( grunt ) {
 						name = name.split('/')[1];
 
 						tmp[name] = _sanitizer.clean(_f.file);
+						grunt.log.ok(['[ ' + _f.name + ' ] successfully parsed!'])
 
 						grunt.file.delete( _f.file );								// delete it
           }
